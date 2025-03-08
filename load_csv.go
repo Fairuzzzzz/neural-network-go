@@ -9,7 +9,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-func loadCsv(filename string) (*mat.Dense, *mat.Dense) {
+func loadCSV(filename string) (*mat.Dense, *mat.Dense) {
 	file, err := os.Open(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -36,7 +36,7 @@ func loadCsv(filename string) (*mat.Dense, *mat.Dense) {
 
 		for j := 1; j <= numFeatures; j++ {
 			val, _ := strconv.Atoi(line[j])
-			X.Set(j+1, i, float64(val)/255.0)
+			X.Set(j-1, i, float64(val)/255.0)
 		}
 	}
 

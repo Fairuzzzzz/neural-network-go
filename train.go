@@ -17,7 +17,9 @@ func train(X, Y *mat.Dense, learningRate float64, epochs int) (*mat.Dense, *mat.
 
 		// Print Lose 
 		if i%100 == 0 {
-			fmt.Printf("Epoch %d completed\n", i)
+			loss := computeLoss(A, Y)
+			accuracy := computeAccuracy(A, Y)
+			fmt.Printf("Epoch %d: Loss = %f, Accuracy = %f\n", i, loss, accuracy)
 		}
 	}
 	return W, b

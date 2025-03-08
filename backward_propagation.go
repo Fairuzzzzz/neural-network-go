@@ -7,7 +7,7 @@ func backwardPropagation(X, Y, Z, W, b, A *mat.Dense, learningRate float64) {
 	m := float64(X.RawMatrix().Cols)
 
 	// Hitung dA
-	dA := mat.NewDense(A.RawMatrix().Rows, A.RawMatrix().Rows, nil)
+	dA := mat.NewDense(A.RawMatrix().Rows, A.RawMatrix().Cols, nil)
 	dA.Sub(A, Y) // dA = A - Y
 
 	// Hitung dZ = dA * ReLU(derevative)(Z)
@@ -32,6 +32,8 @@ func backwardPropagation(X, Y, Z, W, b, A *mat.Dense, learningRate float64) {
 	}
 
 	// Update Weight dan Bias
-	W.Sub(W, mat.NewDense(W.RawMatrix().Rows, W.RawMatrix().Cols, W.RawMatrix().Data))
-	b.Sub(b, mat.NewDense(b.RawMatrix().Rows, b.RawMatrix().Cols, b.RawMatrix().Data))
+	dW.Scale(learningRate, dW)
+	db.Scale(learningRate, db)
+	W.Sub(W, dW)
+	b.Sub(b, db)
 }

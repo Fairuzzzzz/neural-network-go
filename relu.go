@@ -1,9 +1,7 @@
 package main
 
-func relu(x float64) float64 {
-	if x > 0 {
-		return x
-	}
+import "math"
 
-	return 0
+func relu(x float64) float64 {
+	return math.Max(0, x)
 }
