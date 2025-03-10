@@ -13,9 +13,13 @@ func main() {
 	learningRate := 0.01
 
 	// Train
-	W, b := train(X, Y, learningRate, epoch)
+	W1, b1, W2, b2 := train(X, Y, learningRate, epoch)
 
 	// Predict
-	A := predict(X, W, b)
+	A := predict(X, W1, b1, W2, b2)
 	fmt.Println("Sample Prediction: ", mat.Formatted(A))
+
+	// Calculate final accuracy
+	acc := computeAccuracy(A, Y)
+	fmt.Printf("Final Accuracy: %f\n", acc)
 }

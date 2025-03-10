@@ -2,38 +2,64 @@ package main
 
 import "gonum.org/v1/gonum/mat"
 
-func backwardPropagation(X, Y, Z, W, b, A *mat.Dense, learningRate float64) {
+func backwardPropagation(X, Y, Z1, W1, b1, A1, Z2, W2, b2, A2 *mat.Dense, learningRate float64) {
 	// Batch Size
 	m := float64(X.RawMatrix().Cols)
 
-	// Hitung dA
-	dA := mat.NewDense(A.RawMatrix().Rows, A.RawMatrix().Cols, nil)
-	dA.Sub(A, Y) // dA = A - Y
+	// Output layer gradients
+	dZ2 := mat.NewDense(A2.RawMatrix().Rows, A2.RawMatrix().Cols, nil)
+	dZ2.Sub(A2, Y)
 
-	// Hitung dZ = dA * ReLU(derevative)(Z)
-	dZ := mat.NewDense(Z.RawMatrix().Rows, Z.RawMatrix().Cols, nil)
-	dZ.Apply(func(i, j int, v float64) float64 {
-		return dA.At(i, j) * reluDerevative(v)
-	}, Z)
+	// Update W2 gradients
+	dW2 := mat.NewDense(W2.RawMatrix().Rows, W2.RawMatrix().Cols, nil)
+	dW2.Mul(dZ2, A1.T())
+	dW2.Scale(1/m, dW2)
 
-	// Hitung gradients
-	Xt := mat.DenseCopyOf(X.T())
-	dW := mat.NewDense(W.RawMatrix().Rows, W.RawMatrix().Cols, nil)
-	dW.Mul(dZ, Xt)
-	dW.Scale(1/m, dW)
-
-	db := mat.NewDense(b.RawMatrix().Rows, 1, nil)
-	for i := 0; i < dZ.RawMatrix().Rows; i++ {
+	// Update b2 gradients
+	db2 := mat.NewDense(b2.RawMatrix().Rows, b2.RawMatrix().Cols, nil)
+	for i := 0; i < dZ2.RawMatrix().Rows; i++ {
 		sum := 0.0
-		for j := 0; j < dZ.RawMatrix().Cols; j++ {
-			sum += dZ.At(i, j)
+		for j := 0; j < dZ2.RawMatrix().Cols;j++ {
+			sum += dZ2.At(i, j)
 		}
-		db.Set(i, 0, sum/m)
+		db2.Set(i, 0, sum/m)
 	}
 
-	// Update Weight dan Bias
-	dW.Scale(learningRate, dW)
-	db.Scale(learningRate, db)
-	W.Sub(W, dW)
-	b.Sub(b, db)
+	// Hidden layer gradients
+	dA1 := mat.NewDense(A1.RawMatrix().Rows, A1.RawMatrix().Cols, nil)
+	dA1.Mul(W2.T(), dZ2)
+
+	// Apply ReLU derivative
+	dZ1 := mat.NewDense(Z1.RawMatrix().Rows, Z1.RawMatrix().Cols, nil)
+	dZ1.Apply(func(i, j int, v float64) float64 {
+		return dA1.At(i, j) * reluDerevative(v)
+	}, Z1)
+
+	// Update W1 gradients
+	dW1 := mat.NewDense(W1.RawMatrix().Rows, W1.RawMatrix().Cols, nil)
+	dW1.Mul(dZ1, X.T())
+	dW1.Scale(1/m, dW1)
+
+	// Update b1 gradients
+	db1 := mat.NewDense(b1.RawMatrix().Rows, b1.RawMatrix().Cols, nil)
+	for i := 0;i < dZ1.RawMatrix().Rows;i++ {
+		sum := 0.0
+		for j := 0; j < dZ1.RawMatrix().Cols; j++ {
+			sum += dZ1.At(i, j)
+		}
+		db1.Set(i, 0, sum/m)
+	}
+
+	// Update parameters
+	dW1.Scale(learningRate, dW1)
+	dW2.Scale(learningRate, dW2)
+	db1.Scale(learningRate, db1)
+	db2.Scale(learningRate, db2)
+	
+	W1.Sub(W1, dW1)
+	W2.Sub(W2, dW2)
+	b1.Sub(b1, db1)
+	b2.Sub(b2, db2)
+
+	
 }
